@@ -1,4 +1,4 @@
-# Week 3 Question - Your Boss Is Not a Mind Reader
+# Week 3 Question - Giving Good-Enough Answers
 
 **Student:** Kamilla Volkova
 **Date:** February 4, 2026
