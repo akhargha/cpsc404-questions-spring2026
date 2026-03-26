@@ -34,8 +34,10 @@
         <ul class="student-list-items" id="studentListItems"></ul>
     </div>
 
-    <div class="question-card" id="card">
-        <div class="placeholder">Select a week to begin</div>
+    <div class="deck-area" id="deckArea">
+        <div class="question-card" id="card">
+            <div class="placeholder">Select a week to begin</div>
+        </div>
     </div>
 
     <script>
@@ -45,6 +47,7 @@
         const forwardBtn = document.getElementById('forwardBtn');
         const resetBtn = document.getElementById('resetBtn');
         const card = document.getElementById('card');
+        const deckArea = document.getElementById('deckArea');
         const status = document.getElementById('status');
         const studentList = document.getElementById('studentList');
         const studentListToggle = document.getElementById('studentListToggle');
@@ -101,8 +104,11 @@
                 pool = createPool(fetched.filter(isNonEmpty));
                 renderStudentList();
                 updateStatus();
+                updateDeckVisual();
                 pickBtn.disabled = false;
                 resetBtn.disabled = false;
+                card.classList.remove('flipping');
+                card.classList.add('deal-in');
                 card.innerHTML = '<div class="placeholder">Ready — click "Pick a Question" or press Space</div>';
             } catch (err) {
                 card.innerHTML = `<div class="placeholder">Error loading questions: ${err.message}</div>`;
@@ -173,21 +179,50 @@
             }
         }
 
-        function showQuestion(q) {
+        function updateDeckVisual() {
+            if (!pool || pool.remaining <= 1) {
+                deckArea.classList.add('deck-empty');
+            } else {
+                deckArea.classList.remove('deck-empty');
+            }
+        }
+
+        function showQuestion(q, animate = true) {
             const rendered = marked.parse(cleanBody(q.body));
-            card.innerHTML = `
+            const newContent = `
                 <div class="author">${q.author}</div>
                 <div class="content">${rendered}</div>
             `;
-            card.scrollTop = 0;
-            requestAnimationFrame(checkScroll);
+
+            if (animate) {
+                card.classList.remove('flipping', 'deal-in');
+                // Force reflow so animation restarts
+                void card.offsetWidth;
+                card.classList.add('flipping');
+                // Swap content at the midpoint of the flip
+                setTimeout(() => {
+                    card.innerHTML = newContent;
+                    card.scrollTop = 0;
+                    requestAnimationFrame(checkScroll);
+                    updateDeckVisual();
+                }, 180);
+                card.addEventListener('animationend', () => {
+                    card.classList.remove('flipping');
+                }, { once: true });
+            } else {
+                card.innerHTML = newContent;
+                card.scrollTop = 0;
+                requestAnimationFrame(checkScroll);
+                updateDeckVisual();
+            }
         }
 
         function pickRandom() {
             if (!pool || pool.isEmpty) {
-                card.innerHTML = '<div class="done-message">All questions have been shown!<br>Click "Reset Pool" or press R to start over.</div>';
+                card.innerHTML = '<div class="done-message">All cards dealt!<br>Click "Reset Pool" or press R to shuffle again.</div>';
                 pickBtn.disabled = true;
                 updateStatus();
+                updateDeckVisual();
                 return;
             }
 
@@ -202,19 +237,20 @@
 
         function goBack() {
             if (!pool || !pool.canGoBack) return;
-            showQuestion(pool.back());
+            showQuestion(pool.back(), false);
             updateStatus();
         }
 
         function goForward() {
             if (!pool || !pool.canGoForward) return;
-            showQuestion(pool.forward());
+            showQuestion(pool.forward(), false);
             updateStatus();
         }
 
         function resetQuestionPool() {
             if (pool) pool.reset();
             updateStatus();
+            updateDeckVisual();
             updateStudentListState();
             pickBtn.disabled = false;
             card.innerHTML = '<div class="placeholder">Pool reset — click "Pick a Question" or press Space</div>';
@@ -271,17 +307,17 @@
 
         // Theme toggle
         const themeBtn = document.getElementById('themeBtn');
-        function applyTheme(light) {
-            document.body.classList.toggle('light', light);
-            themeBtn.textContent = light ? '☀️' : '🌙';
-            themeBtn.title = light ? 'Switch to dark mode' : 'Switch to light mode';
+        function applyTheme(dark) {
+            document.body.classList.toggle('dark', dark);
+            themeBtn.textContent = dark ? '☀️' : '🌙';
+            themeBtn.title = dark ? 'Switch to light mode' : 'Switch to dark mode';
         }
-        // Load saved preference (default to dark)
-        applyTheme(localStorage.getItem('theme') === 'light');
+        // Load saved preference (default to light/felt table)
+        applyTheme(localStorage.getItem('theme') === 'dark');
         themeBtn.addEventListener('click', () => {
-            const goLight = !document.body.classList.contains('light');
-            localStorage.setItem('theme', goLight ? 'light' : 'dark');
-            applyTheme(goLight);
+            const goDark = !document.body.classList.contains('dark');
+            localStorage.setItem('theme', goDark ? 'dark' : 'light');
+            applyTheme(goDark);
         });
 
         loadWeeks();
