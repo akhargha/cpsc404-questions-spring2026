@@ -1,0 +1,12 @@
+# Week 12 Question - Chapter 8: Your Boss Is Not Your Friend
+
+**Student:** Fadhil Ahmed
+**Date:** April 8, 2026
+
+## Question
+
+The chapter argues that friendship with a boss is dangerous because the power imbalance turns openness into vulnerability, which is why he recommends emotional distance and careful pushback. But in tech, many workplaces and even collaborative projects still encourage “we’re a family” or friendship-based culture to build trust and loyalty. At what point does that kind of friendliness become a healthy basis for collaboration, and at what point does it become a way of discouraging honest pushback from the people with less power?
+
+## Context
+
+I’m interested in the tension between trust and self-protection in professional relationships. The chapter seems to suggest that closeness can make collaboration easier, but also make it harder to protect yourself when authority is unequal.
